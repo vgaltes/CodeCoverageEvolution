@@ -14,11 +14,8 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
     {
         public ActionResult Index()
         {
-            var buildsCoverage = new Dictionary<string, Module>();
-
-            return View(buildsCoverage);
+            return View();
         }
-        //https://tfs2012.plainconcepts.com/tfs/Bilbao
 
         public JsonResult SelectCollection(string collectionUrl)
         {

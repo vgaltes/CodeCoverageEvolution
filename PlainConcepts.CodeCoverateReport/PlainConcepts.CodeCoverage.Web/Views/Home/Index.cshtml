@@ -1,8 +1,9 @@
-﻿@using PlainConcepts.CodeCoverage.Web.Models;
-@model Dictionary<string, Module>
-<link href="~/Content/jqplot/jquery.jqplot.css" rel="stylesheet" />
-<script class="include" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+﻿<link href="~/Content/jqplot/jquery.jqplot.css" rel="stylesheet" />
+<link href="~/Content/Site.css" rel="stylesheet" />
+
+<script src="~/Scripts/jquery-1.9.1.min.js"></script>
 <script src="~/Scripts/jqplot/jquery.jqplot.min.js"></script>
+
 <!-- Additional plugins go here -->
 <script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
 <script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
@@ -17,11 +18,7 @@
 <script src="~/Scripts/jquery-ui-1.10.2.js"></script>
 <script src="~/Scripts/jqueryform/jquery.form.wizard.js"></script>
 
-<link href="~/Content/Site.css" rel="stylesheet" />
-@{
-    ViewBag.Title = "title";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+<title>TFS Code Coverage</title>
 
 <div id="codeCoverageData">
     <form id="dataCoverageForm" method="post" action="/Home/GetCodeCoverage" class="bbq">

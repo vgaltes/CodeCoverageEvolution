@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlainConcepts.CodeCoverage.Web", "PlainConcepts.CodeCoverage.Web\PlainConcepts.CodeCoverage.Web.csproj", "{C11CFB68-F1D7-44AC-8065-3C013995A089}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlainConcepts.CodeCoverage.Web.Tests", "PlainConcepts.CodeCoverage.Web.Tests\PlainConcepts.CodeCoverage.Web.Tests.csproj", "{F8A7197E-F6C2-4BCA-BAA0-FCB022D7625A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,10 +13,6 @@ Global
 		{C11CFB68-F1D7-44AC-8065-3C013995A089}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C11CFB68-F1D7-44AC-8065-3C013995A089}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C11CFB68-F1D7-44AC-8065-3C013995A089}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8A7197E-F6C2-4BCA-BAA0-FCB022D7625A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8A7197E-F6C2-4BCA-BAA0-FCB022D7625A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8A7197E-F6C2-4BCA-BAA0-FCB022D7625A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8A7197E-F6C2-4BCA-BAA0-FCB022D7625A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
