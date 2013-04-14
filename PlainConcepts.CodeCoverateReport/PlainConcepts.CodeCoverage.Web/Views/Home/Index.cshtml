@@ -14,50 +14,50 @@
 <!-- jquery.form -->
 <script src="~/Scripts/jqueryform/jquery.form.js"></script>
 <script src="~/Scripts/jquery.validate.js"></script>
-<script src="~/Scripts/jqueryform/bbq.js"></script>
 <script src="~/Scripts/jquery-ui-1.10.2.js"></script>
 <script src="~/Scripts/jqueryform/jquery.form.wizard.js"></script>
 
+<link href="~/Content/Site.css" rel="stylesheet" />
 @{
     ViewBag.Title = "title";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div id="demoWrapper">
+<div id="codeCoverageData">
     <form id="dataCoverageForm" method="post" action="/Home/GetCodeCoverage" class="bbq">
         <div id="state"></div>
         <div id="fieldWrapper">
             <div class="step" id="selectServer">
-                <span class="font_normal_07em_black">First step - Name</span><br />
-                <label for="collectionUrl">Server URL</label><br />
-                <input class="input_field_12em" name="collectionUrl" id="collectionUrl" /><br />
+                <label for="collectionUrl">Write TFS Collection Url</label><br />
+                <input name="collectionUrl" id="collectionUrl" />
             </div>
             <div class="step" id="selectProject">
+                <label for="collectionUrl">Select a team project</label><br />
                 <input hidden="true" name="collectionUrl" id="collectionUrlProject" />
                 <div id="selectProjectLocation"></div>
             </div>
-            <div class="step submit_step" id="selectBuild" >
+            <div class="step" id="selectBuild" >
+                <label for="collectionUrl">Select a build</label><br />
                 <input hidden="true" name="collectionUrl" id="collectionUrlBuild" />
                 <input hidden="true" name="projectName" id="projectName" />
                 <div id="selectBuildLocation"></div>
             </div>
         </div>
-        <div id="demoNavigation"> 							
+        <div id="navigation">
+            <input class="navigation_button" id="next" value="Submit" type="submit" /> 							
             <input class="navigation_button" id="back" value="Reset" type="reset" />
-            <input class="navigation_button" id="next" value="Submit" type="submit" />
         </div>
     </form>
-    <hr />
 </div>
-<div id="codeCoverageChart" style="height:300px; width:500px; margin-left: auto; margin-right: auto"></div>
+<div id="codeCoverageChart" style="height:500px; width:70%; margin-left: auto; margin-right: auto"></div>
 
 
 <script type="text/javascript">
 			$(function(){
 			    $("#dataCoverageForm").formwizard({
 				 	formPluginEnabled: true,
-				 	validationEnabled: true,
-				 	focusFirstInput : true,
+				 	focusFirstInput: true,
+				 	disableUIStyles:true,
 				 	remoteAjax: {
 				 	    "selectServer": { // add a remote ajax call when moving next from the second step
 				 	        url: "/Home/SelectCollection",
@@ -105,11 +105,10 @@
 				 	},
 				 	formOptions :{
 						success: function(data) {
-						    $("#demoWrapper").fadeTo(500, 0, function() {
+						    $("#codeCoverageData").fadeTo(500, 0, function() {
 						        showChart(data);
 						    });
 						},
-						beforeSubmit: function(data){$("#data").html("data sent to the server: " + $.param(data));},
 						dataType: 'json',
 						resetForm: false
 				 	}
@@ -133,7 +132,7 @@
         
         var plot3 = $.jqplot('codeCoverageChart', series,
             {
-                title: 'Line Style Options',
+                title: 'Code coverage',
                 // Set default options on all series, turn on smoothing.
                 seriesDefaults: {
                     rendererOptions: {
