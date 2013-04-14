@@ -50,9 +50,8 @@
         },
         formOptions: {
             success: function (data) {
-                $("#codeCoverageData").fadeTo(500, 0, function () {
-                    showChart(data);
-                });
+                $("#codeCoverageData").hide();
+                showChart(data);
             },
             dataType: 'json',
             resetForm: false
