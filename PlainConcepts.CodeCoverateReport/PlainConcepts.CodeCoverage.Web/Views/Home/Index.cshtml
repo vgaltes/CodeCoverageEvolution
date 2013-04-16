@@ -27,17 +27,26 @@
             <div class="step" id="selectServer">
                 <label for="collectionUrl">Write TFS Collection Url</label><br />
                 <input name="collectionUrl" id="collectionUrl" />
+                
+                <input hidden="true" name="username" id="userNameCollection" />
+                <input hidden="true" name="password" id="passwordCollection" />
             </div>
             <div class="step" id="selectProject">
                 <label for="collectionUrl">Select a team project</label><br />
                 <input hidden="true" name="collectionUrl" id="collectionUrlProject" />
                 <div id="selectProjectLocation"></div>
+                
+                <input hidden="true" name="username" id="userNameProject" />
+                <input hidden="true" name="password" id="passwordProject" />
             </div>
             <div class="step" id="selectBuild" >
                 <label for="collectionUrl">Select a build</label><br />
                 <input hidden="true" name="collectionUrl" id="collectionUrlBuild" />
                 <input hidden="true" name="projectName" id="projectName" />
                 <div id="selectBuildLocation"></div>
+                
+                <input hidden="true" name="username" id="userNameBuild" />
+                <input hidden="true" name="password" id="passwordBuild" />
             </div>
         </div>
         <div id="navigation">
@@ -48,5 +57,21 @@
 </div>
 <div id="codeCoverageChart"></div>
 
+<div id="modalDialog">
+    <div id="modalDialogBackground" class="modalBackground"></div>
+    <div id="modalDialogContent">
+        <div id="content">
+            <label for="username">Username</label>
+            <input name="username" id="username" /><br /><br />
+
+            <label for="password">Password</label>
+            <input name="password" id="password" type="password" /><br />
+        </div>
+        <div id="navbar" class="centered">
+            <input id="dialog_ok" value="OK" type="submit" /> 	
+            <input id="dialog_cancel" value="Cancel" type="reset" />
+        </div>
+    </div>
+</div>
 
 <script src="~/Scripts/codecoverage.js"></script>

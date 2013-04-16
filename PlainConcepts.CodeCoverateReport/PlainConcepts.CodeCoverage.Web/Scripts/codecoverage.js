@@ -1,4 +1,7 @@
-﻿$(function () {
+﻿var username = '';
+var password = '';
+
+$(function () {
     $("#dataCoverageForm").formwizard({
         formPluginEnabled: true,
         focusFirstInput: true,
@@ -20,7 +23,7 @@
                         $("#collectionUrlProject").val($("#collectionUrl").val());
                         return true; //return true to make the wizard move to the next step    
                     } else {
-                        alert("success!");
+                        $("#modalDialog").show();
                         return false; //return true to make the wizard move to the next step
                     }
                 }
@@ -42,7 +45,6 @@
                         $("#projectName").val($("#projectUri").val());
                         return true; //return true to make the wizard move to the next step    
                     } else {
-                        alert("success!");
                         return false; //return true to make the wizard move to the next step
                     }
                 }
@@ -51,6 +53,7 @@
         formOptions: {
             success: function (data) {
                 $("#codeCoverageData").hide();
+                $("#codeCoverageChart").show();
                 showChart(data);
             },
             dataType: 'json',
@@ -58,6 +61,24 @@
         }
     }
     );
+});
+
+$(document).ready(function() {
+    $("#dialog_ok").click(function() {
+        $("#userNameCollection").val($("#username").val());
+        $("#passwordCollection").val($("#password").val());
+        
+        $("#userNameProject").val($("#username").val());
+        $("#passwordProject").val($("#password").val());
+        
+        $("#userNameBuild").val($("#username").val());
+        $("#passwordBuild").val($("#password").val());
+        $("#modalDialog").hide();
+    });
+
+    $("#dialog_cancel").click(function () {
+        $("#modalDialog").hide();
+    });
 });
 
 function showChart(data) {

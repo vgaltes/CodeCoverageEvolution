@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
+using Microsoft.TeamFoundation;
 using Microsoft.TeamFoundation.Build.Client;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.Server;
@@ -17,33 +19,81 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return View();
         }
 
-        public JsonResult SelectCollection(string collectionUrl)
+        /*public JsonResult SelectCollection(string collectionUrl)
         {
             Uri collectionUri = new Uri(collectionUrl);
             var teamProjects = new TeamProjectsModel();
 
             using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
             {
-                var commonStruct = tfsTeamProjectCollection.GetService<ICommonStructureService>();
-                var teamProjectInfos = commonStruct.ListAllProjects();
-
-                teamProjects.Status = true;
-                foreach (var teamProjectInfo in teamProjectInfos)
+                try
                 {
-                    teamProjects.Projects.Add(new TeamProject(teamProjectInfo.Name, teamProjectInfo.Uri));
+                    var commonStruct = tfsTeamProjectCollection.GetService<ICommonStructureService>();
+                    var teamProjectInfos = commonStruct.ListAllProjects();
+
+                    teamProjects.Status = true;
+                    foreach (var teamProjectInfo in teamProjectInfos)
+                    {
+                        teamProjects.Projects.Add(new TeamProject(teamProjectInfo.Name, teamProjectInfo.Uri));
+                    }
+                }
+                catch (TeamFoundationServerUnauthorizedException unauthorizedException)
+                {
+                    teamProjects.Status = false;
+                }
+            }
+
+            return Json(teamProjects, JsonRequestBehavior.AllowGet);
+        }*/
+
+        public JsonResult SelectCollection(string collectionUrl, string userName, string password)
+        {
+            Uri collectionUri = new Uri(collectionUrl);
+            var teamProjects = new TeamProjectsModel();
+
+            using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+                    {
+                        tfsTeamProjectCollection.ClientCredentials =
+                            new TfsClientCredentials(new WindowsCredential(new NetworkCredential(userName, password)));
+                        tfsTeamProjectCollection.Authenticate();
+                    }
+
+                    var commonStruct = tfsTeamProjectCollection.GetService<ICommonStructureService>();
+                    var teamProjectInfos = commonStruct.ListAllProjects();
+
+                    teamProjects.Status = true;
+                    foreach (var teamProjectInfo in teamProjectInfos)
+                    {
+                        teamProjects.Projects.Add(new TeamProject(teamProjectInfo.Name, teamProjectInfo.Uri));
+                    }
+                }
+                catch (TeamFoundationServerUnauthorizedException unauthorizedException)
+                {
+                    teamProjects.Status = false;
                 }
             }
 
             return Json(teamProjects, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult SelectProject(string collectionUrl, string projectUri)
+        public JsonResult SelectProject(string collectionUrl, string projectUri, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
             var buildListModel = new BuildListModel();
 
             using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
             {
+                if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+                {
+                    tfsTeamProjectCollection.ClientCredentials =
+                        new TfsClientCredentials(new WindowsCredential(new NetworkCredential(userName, password)));
+                    tfsTeamProjectCollection.Authenticate();
+                }
+
                 var buildService = tfsTeamProjectCollection.GetService<IBuildServer>();
                 var builds = buildService.QueryBuildDefinitions(projectUri);
                 buildListModel.Status = true;
@@ -58,14 +108,22 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             
         }
 
-        public JsonResult GetCodeCoverage(string collectionUrl, string projectName, string buildName)
+        public JsonResult GetCodeCoverage(string collectionUrl, string projectName, string buildName, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
             Dictionary<string, Module> buildsCoverage = new Dictionary<string, Module>();
 
             using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
             {
-                var builds = GetBuilds(tfsTeamProjectCollection, projectName, buildName);
+                if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+                {
+                    tfsTeamProjectCollection.ClientCredentials =
+                        new TfsClientCredentials(new WindowsCredential(new NetworkCredential(userName, password)));
+                    tfsTeamProjectCollection.Authenticate();
+                }
+
+                var buildService = tfsTeamProjectCollection.GetService<IBuildServer>();
+                var builds = GetBuilds(buildService, projectName, buildName);
                 foreach (var buildResult in builds.Builds)
                 {
                     GetBuildCodeCoverage(tfsTeamProjectCollection, projectName, buildResult, buildsCoverage);
@@ -77,10 +135,9 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return Json(buildCoverageOrdered, JsonRequestBehavior.AllowGet);
         }
 
-        private static IBuildQueryResult GetBuilds(TfsTeamProjectCollection tfsTeamProjectCollection, string teamProject,
+        private static IBuildQueryResult GetBuilds(IBuildServer buildService, string teamProject,
                                                    string buildName)
         {
-            var buildService = tfsTeamProjectCollection.GetService<IBuildServer>();
             var buildSpec = buildService.CreateBuildDetailSpec(teamProject);
             buildSpec.MinFinishTime = DateTime.Now.AddDays(-30);
             buildSpec.Status = BuildStatus.All;
