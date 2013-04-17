@@ -149,6 +149,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\BatchBuildCodeCoverageModel.cs" />
     <Compile Include="Models\BuildModel.cs" />
     <Compile Include="Models\CodeCoverageModel.cs" />
     <Compile Include="Models\TeamProjectsModel.cs" />
@@ -440,6 +441,7 @@
     <Content Include="Views\Web.config" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Home\Batch.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

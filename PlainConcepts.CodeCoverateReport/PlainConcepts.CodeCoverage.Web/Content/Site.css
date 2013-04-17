@@ -212,3 +212,12 @@ input {
 #navbar {
     margin-top: 30px;
 }
+
+textarea {
+    width: 100%;
+    resize: none;
+}
+
+.batchChart {
+    margin-top: 90px;
+}

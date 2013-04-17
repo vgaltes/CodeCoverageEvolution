@@ -1,0 +1,38 @@
+﻿<link href="~/Content/jqplot/jquery.jqplot.css" rel="stylesheet" />
+<link href="~/Content/Site.css" rel="stylesheet" />
+
+<script src="~/Scripts/jquery-1.9.1.min.js"></script>
+<script src="~/Scripts/jqplot/jquery.jqplot.min.js"></script>
+
+<!-- Additional plugins go here -->
+<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
+<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+<script class="include" src="~/Scripts/jqplot/plugins/jqplot.logAxisRenderer.js"></script>
+<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisTickRenderer.js"></script>
+<script class="include" src="~/Scripts/jqplot/plugins/jqplot.categoryAxisRenderer.js"></script>
+<script src="~/Scripts/jqplot/plugins/jqplot.enhancedLegendRenderer.js"></script>
+
+<!-- jquery.form -->
+<script src="~/Scripts/jqueryform/jquery.form.js"></script>
+<script src="~/Scripts/jquery.validate.js"></script>
+<script src="~/Scripts/jquery-ui-1.10.2.js"></script>
+<script src="~/Scripts/jqueryform/jquery.form.wizard.js"></script>
+
+<title>TFS Code Coverage</title>
+
+<div id="codeCoverageCharts">
+</div>
+
+<div id="parametersContainer">
+<div id="modalDialogBackground" class="modalBackground"></div>
+    <div id="modalDialogContent">
+        <div id="content">
+            <label for="parameters">Parameters</label>
+            <textarea name="parameters" id="parameters" rows="10" cols="80"></textarea>
+        </div>
+        <div id="navbar" class="centered">
+            <input id="batch_ok" value="OK" type="submit" /> 	
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/codecoverage.js"></script>

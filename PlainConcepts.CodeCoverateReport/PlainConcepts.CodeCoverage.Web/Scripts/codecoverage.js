@@ -54,7 +54,7 @@ $(function () {
             success: function (data) {
                 $("#codeCoverageData").hide();
                 $("#codeCoverageChart").show();
-                showChart(data);
+                showChart('codeCoverageChart', data);
             },
             dataType: 'json',
             resetForm: false
@@ -79,9 +79,27 @@ $(document).ready(function() {
     $("#dialog_cancel").click(function () {
         $("#modalDialog").hide();
     });
+
+    $("#batch_ok").click(function() {
+        var params = $("#parameters").val();
+        $.post('/Home/BatchCoverage', { "parameters": params }).done(function (data) {
+            $("#parametersContainer").hide();
+            $("#codeCoverageChart").show();
+
+            for (var indexData in data) {
+                var divName = 'codeCoverageChart_' + indexData;
+                
+                var divChart = $("<div class='batchChart' id='" + divName + "' >");
+
+                $("#codeCoverageCharts").append(divChart);
+                showChart(divName, data[indexData].CodeCoverage, data[indexData].BuildName);
+            }
+        });
+    });
+
 });
 
-function showChart(data) {
+function showChart(divName, data, buildName) {
     var series = [];
     var labels = [];
 
@@ -95,9 +113,9 @@ function showChart(data) {
         series.push(points);
     }
 
-    var plot3 = $.jqplot('codeCoverageChart', series,
+    var plot3 = $.jqplot(divName, series,
         {
-            title: 'Code coverage',
+            title: 'Code coverage ' + buildName,
             // Set default options on all series, turn on smoothing.
             seriesDefaults: {
                 rendererOptions: {

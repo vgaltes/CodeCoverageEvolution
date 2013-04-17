@@ -19,33 +19,6 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return View();
         }
 
-        /*public JsonResult SelectCollection(string collectionUrl)
-        {
-            Uri collectionUri = new Uri(collectionUrl);
-            var teamProjects = new TeamProjectsModel();
-
-            using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
-            {
-                try
-                {
-                    var commonStruct = tfsTeamProjectCollection.GetService<ICommonStructureService>();
-                    var teamProjectInfos = commonStruct.ListAllProjects();
-
-                    teamProjects.Status = true;
-                    foreach (var teamProjectInfo in teamProjectInfos)
-                    {
-                        teamProjects.Projects.Add(new TeamProject(teamProjectInfo.Name, teamProjectInfo.Uri));
-                    }
-                }
-                catch (TeamFoundationServerUnauthorizedException unauthorizedException)
-                {
-                    teamProjects.Status = false;
-                }
-            }
-
-            return Json(teamProjects, JsonRequestBehavior.AllowGet);
-        }*/
-
         public JsonResult SelectCollection(string collectionUrl, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
@@ -108,7 +81,52 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             
         }
 
+        public ActionResult Batch()
+        {
+            return View();
+        }
+
+        public JsonResult BatchCoverage(string parameters)
+        {
+            // var result = new List<List<KeyValuePair<string, Module>>>();
+            var result = new List<BatchBuildCodeCoverageModel>();
+
+            var buildsToCalculateCoverage = parameters.Split(new string[] {";"}, StringSplitOptions.RemoveEmptyEntries);
+            
+            foreach (var buildToCalculateCoverage in buildsToCalculateCoverage)
+            {
+                var buildParameters = buildToCalculateCoverage.Split(new string[] {","},
+                                                                        StringSplitOptions.RemoveEmptyEntries);
+
+                if  ( buildParameters != null && buildParameters.Count() == 5 )
+                {
+                    var collectionUrl = buildParameters[0];
+                    var projectName = buildParameters[1];
+                    var buildName = buildParameters[2];
+                    var userName = buildParameters[3];
+                    var password = buildParameters[4];
+
+                    var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
+
+                    BatchBuildCodeCoverageModel model = new BatchBuildCodeCoverageModel();
+                    model.BuildName = buildName;
+                    model.CodeCoverage = buildCoverageOrdered;
+                    result.Add(model);
+                }
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
         public JsonResult GetCodeCoverage(string collectionUrl, string projectName, string buildName, string userName, string password)
+        {
+            var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
+
+            return Json(buildCoverageOrdered, JsonRequestBehavior.AllowGet);
+        }
+
+        private List<KeyValuePair<string, Module>> CalculateBuildCoverageOrdered(string collectionUrl, string projectName, string buildName, string userName,
+                                                   string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
             Dictionary<string, Module> buildsCoverage = new Dictionary<string, Module>();
@@ -131,8 +149,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             }
 
             var buildCoverageOrdered = buildsCoverage.OrderBy(b => b.Value.Builds.First().Name).ToList();
-
-            return Json(buildCoverageOrdered, JsonRequestBehavior.AllowGet);
+            return buildCoverageOrdered;
         }
 
         private static IBuildQueryResult GetBuilds(IBuildServer buildService, string teamProject,
