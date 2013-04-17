@@ -149,7 +149,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\BatchBuildCodeCoverageModel.cs" />
+    <Compile Include="Models\BuildCodeCoverageModel.cs" />
     <Compile Include="Models\BuildModel.cs" />
     <Compile Include="Models\CodeCoverageModel.cs" />
     <Compile Include="Models\TeamProjectsModel.cs" />

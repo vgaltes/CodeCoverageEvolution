@@ -88,8 +88,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
 
         public JsonResult BatchCoverage(string parameters)
         {
-            // var result = new List<List<KeyValuePair<string, Module>>>();
-            var result = new List<BatchBuildCodeCoverageModel>();
+            var result = new List<BuildCodeCoverageModel>();
 
             var buildsToCalculateCoverage = parameters.Split(new string[] {";"}, StringSplitOptions.RemoveEmptyEntries);
             
@@ -108,9 +107,12 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
 
                     var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
 
-                    BatchBuildCodeCoverageModel model = new BatchBuildCodeCoverageModel();
+                    var buildCoverage = CalculateBuildTotalCodeCoverage(buildCoverageOrdered);
+
+                    var model = new BuildCodeCoverageModel();
                     model.BuildName = buildName;
-                    model.CodeCoverage = buildCoverageOrdered;
+                    model.Modules = buildCoverageOrdered;
+                    model.TotalCoverage = buildCoverage;
                     result.Add(model);
                 }
             }
@@ -122,7 +124,39 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
         {
             var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
 
-            return Json(buildCoverageOrdered, JsonRequestBehavior.AllowGet);
+            var buildCoverage = CalculateBuildTotalCodeCoverage(buildCoverageOrdered);
+
+            BuildCodeCoverageModel result = new BuildCodeCoverageModel();
+            result.TotalCoverage = buildCoverage;
+            result.Modules = buildCoverageOrdered;
+            result.BuildName = buildName;
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        private static double CalculateBuildTotalCodeCoverage(List<KeyValuePair<string, Module>> buildCoverageOrdered)
+        {
+            string lastBuild = string.Empty;
+            double blocksCovered = 0;
+            double blocksNotCovered = 0;
+
+            foreach (var build in buildCoverageOrdered)
+            {
+                if (build.Value.Builds.Last().Name.CompareTo(lastBuild) > 0)
+                    lastBuild = build.Value.Builds.Last().Name;
+            }
+
+            foreach (var build in buildCoverageOrdered)
+            {
+                if (build.Value.Builds.Last().Name == lastBuild)
+                {
+                    blocksCovered += build.Value.Builds.Last().BlocksCovered;
+                    blocksNotCovered += build.Value.Builds.Last().BlocksNotCovered;
+                }
+            }
+
+            double buildCoverage = blocksCovered*100/(blocksCovered + blocksNotCovered);
+            return buildCoverage;
         }
 
         private List<KeyValuePair<string, Module>> CalculateBuildCoverageOrdered(string collectionUrl, string projectName, string buildName, string userName,
@@ -200,7 +234,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                                (double)
                                (moduleInfo.Statistics.BlocksCovered + moduleInfo.Statistics.BlocksNotCovered))*
                               100.0;
-            Build buildPlain = new Build(build.BuildNumber, coverage);
+            Build buildPlain = new Build(build.BuildNumber, coverage, moduleInfo.Statistics.BlocksCovered, moduleInfo.Statistics.BlocksNotCovered);
 
             module.Builds.Add(buildPlain);
         }

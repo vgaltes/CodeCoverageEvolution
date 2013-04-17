@@ -220,4 +220,7 @@ textarea {
 
 .batchChart {
     margin-top: 90px;
+    width:70%; 
+    margin-left: auto;
+    margin-right: auto;
 }
