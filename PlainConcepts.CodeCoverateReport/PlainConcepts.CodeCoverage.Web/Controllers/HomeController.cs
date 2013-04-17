@@ -19,33 +19,6 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return View();
         }
 
-        /*public JsonResult SelectCollection(string collectionUrl)
-        {
-            Uri collectionUri = new Uri(collectionUrl);
-            var teamProjects = new TeamProjectsModel();
-
-            using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
-            {
-                try
-                {
-                    var commonStruct = tfsTeamProjectCollection.GetService<ICommonStructureService>();
-                    var teamProjectInfos = commonStruct.ListAllProjects();
-
-                    teamProjects.Status = true;
-                    foreach (var teamProjectInfo in teamProjectInfos)
-                    {
-                        teamProjects.Projects.Add(new TeamProject(teamProjectInfo.Name, teamProjectInfo.Uri));
-                    }
-                }
-                catch (TeamFoundationServerUnauthorizedException unauthorizedException)
-                {
-                    teamProjects.Status = false;
-                }
-            }
-
-            return Json(teamProjects, JsonRequestBehavior.AllowGet);
-        }*/
-
         public JsonResult SelectCollection(string collectionUrl, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
@@ -135,8 +108,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return Json(buildCoverageOrdered, JsonRequestBehavior.AllowGet);
         }
 
-        private static IBuildQueryResult GetBuilds(IBuildServer buildService, string teamProject,
-                                                   string buildName)
+        private static IBuildQueryResult GetBuilds(IBuildServer buildService, string teamProject, string buildName)
         {
             var buildSpec = buildService.CreateBuildDetailSpec(teamProject);
             buildSpec.MinFinishTime = DateTime.Now.AddDays(-30);
@@ -148,7 +120,6 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             var builds = buildService.QueryBuilds(buildSpec);
             return builds;
         }
-
 
         private void GetBuildCodeCoverage(TfsTeamProjectCollection tfsCollection, string teamProject, IBuildDetail build, Dictionary<string, Module> buildsCoverage)
         {
