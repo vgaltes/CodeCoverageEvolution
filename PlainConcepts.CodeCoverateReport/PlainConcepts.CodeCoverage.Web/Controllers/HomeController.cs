@@ -1,25 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Web.Mvc;
-using System.Xml;
-using Microsoft.TeamFoundation;
-using Microsoft.TeamFoundation.Build.Client;
-using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.Server;
-using Microsoft.TeamFoundation.TestManagement.Client;
-using PlainConcepts.CodeCoverage.Web.Models;
-
-namespace PlainConcepts.CodeCoverage.Web.Controllers
+﻿namespace PlainConcepts.CodeCoverage.Web.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+    using System.Web.Mvc;
+    using System.Xml;
+    using Microsoft.TeamFoundation;
+    using Microsoft.TeamFoundation.Build.Client;
+    using Microsoft.TeamFoundation.Client;
+    using Microsoft.TeamFoundation.Server;
+    using Microsoft.TeamFoundation.TestManagement.Client;
+    using Models;
+
+    /// <summary>
+    /// Home controller
+    /// </summary>
     public class HomeController : Controller
     {
+        /// <summary>
+        /// Index action
+        /// </summary>
+        /// <returns>The frontend code for the application</returns>
         public ActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Selects a collection in a TFS server
+        /// </summary>
+        /// <param name="collectionUrl">The collection's url</param>
+        /// <param name="userName">Username to connect to TFS</param>
+        /// <param name="password">User's password</param>
+        /// <returns>A list of projects</returns>
         public JsonResult SelectCollection(string collectionUrl, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
@@ -54,6 +68,14 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return Json(teamProjects, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// Selects a project in a TFS Server
+        /// </summary>
+        /// <param name="collectionUrl">The collection's url</param>
+        /// <param name="projectUri">The project Uri</param>
+        /// <param name="userName">Username to connect to TFS</param>
+        /// <param name="password">User's password</param>
+        /// <returns>A list of builds</returns>
         public JsonResult SelectProject(string collectionUrl, string projectUri, string userName, string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
@@ -79,48 +101,18 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             }
 
             return Json(buildListModel, JsonRequestBehavior.AllowGet);
-
         }
 
-        public ActionResult Batch()
-        {
-            return View();
-        }
 
-        public JsonResult BatchCoverage(string parameters)
-        {
-            var result = new List<BuildCodeCoverageModel>();
-
-            var buildsToCalculateCoverage = parameters.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var buildToCalculateCoverage in buildsToCalculateCoverage)
-            {
-                var buildParameters = buildToCalculateCoverage.Split(new string[] { "," },
-                                                                        StringSplitOptions.RemoveEmptyEntries);
-
-                if (buildParameters != null && buildParameters.Count() == 5)
-                {
-                    var collectionUrl = buildParameters[0];
-                    var projectName = buildParameters[1];
-                    var buildName = buildParameters[2];
-                    var userName = buildParameters[3];
-                    var password = buildParameters[4];
-
-                    var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
-
-                    var buildCoverage = CalculateBuildTotalCodeCoverage(buildCoverageOrdered);
-
-                    var model = new BuildCodeCoverageModel();
-                    model.BuildName = buildName;
-                    model.Modules = buildCoverageOrdered;
-                    model.TotalCoverage = buildCoverage;
-                    result.Add(model);
-                }
-            }
-
-            return Json(result, JsonRequestBehavior.AllowGet);
-        }
-
+        /// <summary>
+        /// Gets the code coverage for a build in a TFS server
+        /// </summary>
+        /// <param name="collectionUrl">The collection's url</param>
+        /// <param name="projectName">The project name</param>
+        /// <param name="buildName">The build name</param>
+        /// <param name="userName">Username to connect to TFS</param>
+        /// <param name="password">User's password</param>
+        /// <returns></returns>
         public JsonResult GetCodeCoverage(string collectionUrl, string projectName, string buildName, string userName, string password)
         {
             var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
@@ -135,28 +127,77 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        /// <summary>
+        /// Batch action
+        /// </summary>
+        /// <returns>The frontend code to make a batch request</returns>
+        public ActionResult Batch()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Returns a group of code coverage results
+        /// </summary>
+        /// <param name="parameters">Parameters that define the bulds to use to make the request</param>
+        /// <returns>The json representation of the code coverage results</returns>
+        /// <remarks>The parameters should be lines like this 
+        /// (<collection_url>,<ProjectName>,<buildName>,<user>,<password></password>) separated by ;
+        /// </remarks>
+        public JsonResult BatchCoverage(string parameters)
+        {
+            var result = new List<BuildCodeCoverageModel>();
+
+            var buildsToCalculateCoverage = parameters.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var buildToCalculateCoverage in buildsToCalculateCoverage)
+            {
+                var buildParameters = buildToCalculateCoverage.Split(new string[] { "," },
+                                                                     StringSplitOptions.RemoveEmptyEntries);
+
+                if (buildParameters != null && buildParameters.Count() == 5)
+                {
+                    var collectionUrl = buildParameters[0];
+                    var projectName = buildParameters[1];
+                    var buildName = buildParameters[2];
+                    var userName = buildParameters[3];
+                    var password = buildParameters[4];
+
+                    var buildCoverageOrdered = CalculateBuildCoverageOrdered(collectionUrl, projectName, buildName, userName, password);
+
+                    var buildCoverage = CalculateBuildTotalCodeCoverage(buildCoverageOrdered);
+
+                    var model = CreateBuildCodeCoverageModel(buildName, buildCoverageOrdered, buildCoverage);
+
+                    result.Add(model);
+                }
+            }
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        private static BuildCodeCoverageModel CreateBuildCodeCoverageModel(string buildName, List<KeyValuePair<string, Module>> buildCoverageOrdered,
+                                                                           double buildCoverage)
+        {
+            var model = new BuildCodeCoverageModel();
+            model.BuildName = buildName;
+            model.Modules = buildCoverageOrdered;
+            model.TotalCoverage = buildCoverage;
+            return model;
+        }
+
         private static double CalculateBuildTotalCodeCoverage(List<KeyValuePair<string, Module>> buildCoverageOrdered)
         {
-            string lastBuild = string.Empty;
             double blocksCovered = 0;
             double blocksNotCovered = 0;
 
             foreach (var build in buildCoverageOrdered)
             {
-                if (build.Value.Builds.Last().Name.CompareTo(lastBuild) > 0)
-                    lastBuild = build.Value.Builds.Last().Name;
+                blocksCovered += build.Value.Builds.Last().BlocksCovered;
+                blocksNotCovered += build.Value.Builds.Last().BlocksNotCovered;
             }
 
-            foreach (var build in buildCoverageOrdered)
-            {
-                if (build.Value.Builds.Last().Name == lastBuild)
-                {
-                    blocksCovered += build.Value.Builds.Last().BlocksCovered;
-                    blocksNotCovered += build.Value.Builds.Last().BlocksNotCovered;
-                }
-            }
-
-            double buildCoverage = blocksCovered * 100 / (blocksCovered + blocksNotCovered);
+            var buildCoverage = blocksCovered * 100 / (blocksCovered + blocksNotCovered);
             return buildCoverage;
         }
 
@@ -164,7 +205,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                                                    string password)
         {
             Uri collectionUri = new Uri(collectionUrl);
-            Dictionary<string, Module> buildsCoverage = new Dictionary<string, Module>();
+            var buildsCoverage = new Dictionary<string, Module>();
 
             using (var tfsTeamProjectCollection = new TfsTeamProjectCollection(collectionUri))
             {
@@ -184,7 +225,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                 foreach (var iterationDate in iterationDates)
                 {
                     var builds = GetSprintBuilds(buildService, projectName, buildName, iterationDate.StartDate.Value, iterationDate.EndDate.Value);
-                    if ( builds.Builds.Any() )
+                    if (builds.Builds.Any())
                         GetBuildCodeCoverage(tfsTeamProjectCollection, projectName, builds.Builds.Last(), buildsCoverage);
                 }
             }
@@ -228,7 +269,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                     }
                     else
                     {
-                        Module module = new Module(moduleInfo.Name);
+                        var module = new Module(moduleInfo.Name);
                         AddBuildToModule(build, moduleInfo, module);
                         buildsCoverage.Add(moduleInfo.Name, module);
                     }
