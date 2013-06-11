@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using System.Xml;
 using Microsoft.TeamFoundation;
 using Microsoft.TeamFoundation.Build.Client;
 using Microsoft.TeamFoundation.Client;
@@ -78,7 +79,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             }
 
             return Json(buildListModel, JsonRequestBehavior.AllowGet);
-            
+
         }
 
         public ActionResult Batch()
@@ -90,14 +91,14 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
         {
             var result = new List<BuildCodeCoverageModel>();
 
-            var buildsToCalculateCoverage = parameters.Split(new string[] {";"}, StringSplitOptions.RemoveEmptyEntries);
-            
+            var buildsToCalculateCoverage = parameters.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
             foreach (var buildToCalculateCoverage in buildsToCalculateCoverage)
             {
-                var buildParameters = buildToCalculateCoverage.Split(new string[] {","},
+                var buildParameters = buildToCalculateCoverage.Split(new string[] { "," },
                                                                         StringSplitOptions.RemoveEmptyEntries);
 
-                if  ( buildParameters != null && buildParameters.Count() == 5 )
+                if (buildParameters != null && buildParameters.Count() == 5)
                 {
                     var collectionUrl = buildParameters[0];
                     var projectName = buildParameters[1];
@@ -155,7 +156,7 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                 }
             }
 
-            double buildCoverage = blocksCovered*100/(blocksCovered + blocksNotCovered);
+            double buildCoverage = blocksCovered * 100 / (blocksCovered + blocksNotCovered);
             return buildCoverage;
         }
 
@@ -175,10 +176,16 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
                 }
 
                 var buildService = tfsTeamProjectCollection.GetService<IBuildServer>();
-                var builds = GetBuilds(buildService, projectName, buildName);
-                foreach (var buildResult in builds.Builds)
+                var commonStructureService = tfsTeamProjectCollection.GetService<ICommonStructureService4>();
+                ProjectInfo projectInfo = commonStructureService.GetProjectFromName(projectName);
+
+                var iterationDates = GetIterationDates(commonStructureService, projectInfo.Uri);
+
+                foreach (var iterationDate in iterationDates)
                 {
-                    GetBuildCodeCoverage(tfsTeamProjectCollection, projectName, buildResult, buildsCoverage);
+                    var builds = GetSprintBuilds(buildService, projectName, buildName, iterationDate.StartDate.Value, iterationDate.EndDate.Value);
+                    if ( builds.Builds.Any() )
+                        GetBuildCodeCoverage(tfsTeamProjectCollection, projectName, builds.Builds.Last(), buildsCoverage);
                 }
             }
 
@@ -186,15 +193,16 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
             return buildCoverageOrdered;
         }
 
-        private static IBuildQueryResult GetBuilds(IBuildServer buildService, string teamProject,
-                                                   string buildName)
+        private static IBuildQueryResult GetSprintBuilds(IBuildServer buildService, string teamProject,
+                                                   string buildName, DateTime startDate, DateTime endDate)
         {
             var buildSpec = buildService.CreateBuildDetailSpec(teamProject);
-            buildSpec.MinFinishTime = DateTime.Now.AddDays(-30);
+            buildSpec.MinFinishTime = startDate;
+            buildSpec.MaxFinishTime = endDate;
             buildSpec.Status = BuildStatus.All;
             buildSpec.QueryOrder = BuildQueryOrder.FinishTimeAscending;
             buildSpec.DefinitionSpec.Name = buildName;
-            buildSpec.MaxBuildsPerDefinition = 150;
+            buildSpec.MaxBuildsPerDefinition = 1500;
 
             var builds = buildService.QueryBuilds(buildSpec);
             return builds;
@@ -230,13 +238,81 @@ namespace PlainConcepts.CodeCoverage.Web.Controllers
 
         private static void AddBuildToModule(IBuildDetail build, IModuleCoverage moduleInfo, Module module)
         {
-            double coverage = ((double) moduleInfo.Statistics.BlocksCovered/
+            double coverage = ((double)moduleInfo.Statistics.BlocksCovered /
                                (double)
-                               (moduleInfo.Statistics.BlocksCovered + moduleInfo.Statistics.BlocksNotCovered))*
+                               (moduleInfo.Statistics.BlocksCovered + moduleInfo.Statistics.BlocksNotCovered)) *
                               100.0;
             Build buildPlain = new Build(build.BuildNumber, coverage, moduleInfo.Statistics.BlocksCovered, moduleInfo.Statistics.BlocksNotCovered);
 
             module.Builds.Add(buildPlain);
+        }
+
+        private static IEnumerable<ScheduleInfo> GetIterationDates(ICommonStructureService4 css, string projectUri)
+        {
+            NodeInfo[] structures = css.ListStructures(projectUri);
+            NodeInfo iterations = structures.FirstOrDefault(n => n.StructureType.Equals("ProjectLifecycle"));
+            List<ScheduleInfo> schedule = null;
+
+            if (iterations != null)
+            {
+                string projectName = css.GetProject(projectUri).Name;
+
+                XmlElement iterationsTree = css.GetNodesXml(new[] { iterations.Uri }, true);
+                GetIterationDates(iterationsTree.ChildNodes[0], projectName, ref schedule);
+            }
+
+            return schedule.Where(s => s.StartDate != null && s.EndDate != null);
+        }
+
+        private static void GetIterationDates(XmlNode node, string projectName, ref List<ScheduleInfo> schedule)
+        {
+            if (schedule == null)
+                schedule = new List<ScheduleInfo>();
+
+            if (node != null)
+            {
+                string iterationPath = node.Attributes["Path"].Value;
+                if (!string.IsNullOrEmpty(iterationPath))
+                {
+                    // Attempt to read the start and end dates if they exist.
+                    string strStartDate = (node.Attributes["StartDate"] != null) ? node.Attributes["StartDate"].Value : null;
+                    string strEndDate = (node.Attributes["FinishDate"] != null) ? node.Attributes["FinishDate"].Value : null;
+
+                    DateTime? startDate = null, endDate = null;
+
+                    if (!string.IsNullOrEmpty(strStartDate) && !string.IsNullOrEmpty(strEndDate))
+                    {
+                        bool datesValid = true;
+
+                        // Both dates should be valid.
+                        DateTime tempStartDate, tempEndDate;
+                        datesValid &= DateTime.TryParse(strStartDate, out tempStartDate);
+                        datesValid &= DateTime.TryParse(strEndDate, out tempEndDate);
+
+                        // Clear the dates unless both are valid.
+                        if (datesValid)
+                        {
+                            startDate = tempStartDate;
+                            endDate = tempEndDate;
+                        }
+                    }
+
+                    schedule.Add(new ScheduleInfo
+                    {
+                        Path = iterationPath.Replace(string.Concat("\\", projectName, "\\Iteration"), projectName),
+                        StartDate = startDate,
+                        EndDate = endDate
+                    });
+                }
+
+                // Visit any child nodes (sub-iterations).
+                if (node.FirstChild != null)
+                {
+                    // The first child node is the <Children> tag, which we'll skip.
+                    for (int nChild = 0; nChild < node.ChildNodes[0].ChildNodes.Count; nChild++)
+                        GetIterationDates(node.ChildNodes[0].ChildNodes[nChild], projectName, ref schedule);
+                }
+            }
         }
     }
 }

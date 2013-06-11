@@ -152,6 +152,7 @@
     <Compile Include="Models\BuildCodeCoverageModel.cs" />
     <Compile Include="Models\BuildModel.cs" />
     <Compile Include="Models\CodeCoverageModel.cs" />
+    <Compile Include="Models\ScheduleInfo.cs" />
     <Compile Include="Models\TeamProjectsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
