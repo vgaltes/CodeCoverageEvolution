@@ -103,7 +103,6 @@
             return Json(buildListModel, JsonRequestBehavior.AllowGet);
         }
 
-
         /// <summary>
         /// Gets the code coverage for a build in a TFS server
         /// </summary>
@@ -248,7 +247,6 @@
             var builds = buildService.QueryBuilds(buildSpec);
             return builds;
         }
-
 
         private void GetBuildCodeCoverage(TfsTeamProjectCollection tfsCollection, string teamProject, IBuildDetail build, Dictionary<string, Module> buildsCoverage)
         {
