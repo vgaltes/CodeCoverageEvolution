@@ -20,7 +20,12 @@ $(function () {
                         }
 
                         $("#selectProjectLocation").html(select);
-                        $("#collectionUrlProject").val($("#collectionUrl").val());
+                        var url = $("#collectionUrl").val();
+                        $("#collectionUrlProject").val(url);
+                        localStorage.setItem('tfsUrl', url);
+                        
+                        activeNextStep();
+                        $('#back').css('visibility', 'visible');
                         return true; //return true to make the wizard move to the next step    
                     } else {
                         $("#modalDialog").show();
@@ -43,6 +48,7 @@ $(function () {
                         $("#selectBuildLocation").html(select);
                         $("#collectionUrlBuild").val($("#collectionUrl").val());
                         $("#projectName").val($("#projectUri").val());
+                        activeNextStep();
                         return true; //return true to make the wizard move to the next step    
                     } else {
                         return false; //return true to make the wizard move to the next step
@@ -54,23 +60,29 @@ $(function () {
             success: function (data) {
                 $("#codeCoverageData").hide();
                 $("#codeCoverageChart").show();
-                showChart('codeCoverageChart', data.Modules, data.BuildName, data.TotalCoverage + '%');
+                showChart('codeCoverageChart', data.Modules, data.BuildName, data.TotalCoverage);
             },
             dataType: 'json',
             resetForm: false
         }
-    }
-    );
+    });
 });
 
-$(document).ready(function() {
-    $("#dialog_ok").click(function() {
+$(document).ready(function () {
+    var url = localStorage.getItem('tfsUrl');
+    if (url) {
+        var control = $('#collectionUrl');
+        control.val(url);
+        control.select();
+    }
+
+    $("#dialog_ok").click(function () {
         $("#userNameCollection").val($("#username").val());
         $("#passwordCollection").val($("#password").val());
-        
+
         $("#userNameProject").val($("#username").val());
         $("#passwordProject").val($("#password").val());
-        
+
         $("#userNameBuild").val($("#username").val());
         $("#passwordBuild").val($("#password").val());
         $("#modalDialog").hide();
@@ -80,7 +92,7 @@ $(document).ready(function() {
         $("#modalDialog").hide();
     });
 
-    $("#batch_ok").click(function() {
+    $("#batch_ok").click(function () {
         var params = $("#parameters").val();
         $.post('/Home/BatchCoverage', { "parameters": params }).done(function (data) {
             $("#parametersContainer").hide();
@@ -88,13 +100,19 @@ $(document).ready(function() {
 
             for (var indexData in data) {
                 var divName = 'codeCoverageChart_' + indexData;
-                
+
                 var divChart = $("<div class='batchChart' id='" + divName + "' >");
 
                 $("#codeCoverageCharts").append(divChart);
                 showChart(divName, data[indexData].Modules, data[indexData].BuildName, data[indexData].TotalCoverage);
             }
         });
+    });
+
+    $('#back').click(function () {
+        var activeItems = $('.step-container.active');
+        activeItems.prev().addClass('active').hide().fadeIn();
+        activeItems.removeClass('active');
     });
 });
 
@@ -114,7 +132,7 @@ function showChart(divName, data, buildName, totalCoverage) {
 
     var plot3 = $.jqplot(divName, series,
         {
-            title: 'Code coverage ' + buildName + ' TotalCoverage: ' + totalCoverage + '%',
+            title: buildName + ' has a coverage of ' + totalCoverage + '%',
             // Set default options on all series, turn on smoothing.
             seriesDefaults: {
                 rendererOptions: {
@@ -136,7 +154,7 @@ function showChart(divName, data, buildName, totalCoverage) {
             axes: {
                 xaxis: {
                     renderer: $.jqplot.CategoryAxisRenderer,
-                    label: 'Build number',
+                    label: 'build number',
                     labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {
@@ -148,4 +166,10 @@ function showChart(divName, data, buildName, totalCoverage) {
             }
         }
     );
+}
+
+function activeNextStep() {
+    var activeItems = $('.step-container.active');
+    activeItems.next().addClass('active');
+    activeItems.removeClass('active');
 }

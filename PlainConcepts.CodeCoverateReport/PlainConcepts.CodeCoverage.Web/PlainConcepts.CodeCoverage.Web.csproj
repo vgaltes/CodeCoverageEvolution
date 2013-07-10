@@ -157,6 +157,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\dotted.png" />
     <Content Include="Content\jqplot\jquery.jqplot.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
