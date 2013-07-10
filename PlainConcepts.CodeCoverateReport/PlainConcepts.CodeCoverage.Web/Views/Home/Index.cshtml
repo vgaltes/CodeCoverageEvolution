@@ -1,77 +1,100 @@
-﻿<link href="~/Content/jqplot/jquery.jqplot.css" rel="stylesheet" />
-<link href="~/Content/Site.css" rel="stylesheet" />
+﻿<head>
+    <link href="~/Content/jqplot/jquery.jqplot.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
 
-<script src="~/Scripts/jquery-1.9.1.min.js"></script>
-<script src="~/Scripts/jqplot/jquery.jqplot.min.js"></script>
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/jqplot/jquery.jqplot.min.js"></script>
 
-<!-- Additional plugins go here -->
-<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
-<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
-<script class="include" src="~/Scripts/jqplot/plugins/jqplot.logAxisRenderer.js"></script>
-<script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisTickRenderer.js"></script>
-<script class="include" src="~/Scripts/jqplot/plugins/jqplot.categoryAxisRenderer.js"></script>
-<script src="~/Scripts/jqplot/plugins/jqplot.enhancedLegendRenderer.js"></script>
+    <!-- Additional plugins go here -->
+    <script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
+    <script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+    <script class="include" src="~/Scripts/jqplot/plugins/jqplot.logAxisRenderer.js"></script>
+    <script class="include" src="~/Scripts/jqplot/plugins/jqplot.canvasAxisTickRenderer.js"></script>
+    <script class="include" src="~/Scripts/jqplot/plugins/jqplot.categoryAxisRenderer.js"></script>
+    <script src="~/Scripts/jqplot/plugins/jqplot.enhancedLegendRenderer.js"></script>
 
-<!-- jquery.form -->
-<script src="~/Scripts/jqueryform/jquery.form.js"></script>
-<script src="~/Scripts/jquery.validate.js"></script>
-<script src="~/Scripts/jquery-ui-1.10.2.js"></script>
-<script src="~/Scripts/jqueryform/jquery.form.wizard.js"></script>
+    <!-- jquery.form -->
+    <script src="~/Scripts/jqueryform/jquery.form.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery-ui-1.10.2.js"></script>
+    <script src="~/Scripts/jqueryform/jquery.form.wizard.js"></script>
 
-<title>TFS Code Coverage</title>
+    <title>TFS Code Coverage</title>
+</head>
+<body>
+    <section class="title">
+        <a href="/">code coverage</a>
+    </section>
 
-<div id="codeCoverageData">
-    <form id="dataCoverageForm" method="post" action="/Home/GetCodeCoverage" class="bbq">
-        <div id="state"></div>
-        <div id="fieldWrapper">
-            <div class="step" id="selectServer">
-                <label for="collectionUrl">Write TFS Collection Url</label><br />
-                <input name="collectionUrl" id="collectionUrl" />
-                
-                <input hidden="true" name="username" id="userNameCollection" />
-                <input hidden="true" name="password" id="passwordCollection" />
+    <div id="codeCoverageData">
+        <div id="balloons">
+            <div class="step-container active">
+                <div class="balloon">1</div>
             </div>
-            <div class="step" id="selectProject">
-                <label for="collectionUrl">Select a team project</label><br />
-                <input hidden="true" name="collectionUrl" id="collectionUrlProject" />
-                <div id="selectProjectLocation"></div>
-                
-                <input hidden="true" name="username" id="userNameProject" />
-                <input hidden="true" name="password" id="passwordProject" />
+            <div class="step-container">
+                <div class="balloon">2</div>
             </div>
-            <div class="step" id="selectBuild" >
-                <label for="collectionUrl">Select a build</label><br />
-                <input hidden="true" name="collectionUrl" id="collectionUrlBuild" />
-                <input hidden="true" name="projectName" id="projectName" />
-                <div id="selectBuildLocation"></div>
-                
-                <input hidden="true" name="username" id="userNameBuild" />
-                <input hidden="true" name="password" id="passwordBuild" />
+            <div class="step-container">
+                <div class="balloon">3</div>
             </div>
         </div>
-        <div id="navigation">
-            <input class="navigation_button" id="next" value="Submit" type="submit" /> 							
-            <input class="navigation_button" id="back" value="Reset" type="reset" />
+        <div id="step-titles">
+            <div class="step-container active">
+                <span class="step-title">write TFS collection URL</span>
+            </div>
+            <div class="step-container">
+                <span class="step-title">select a team project</span>
+            </div>
+            <div class="step-container">
+                <span class="step-title">select a build</span>
+            </div>
         </div>
-    </form>
-</div>
-<div id="codeCoverageChart"></div>
+        <form id="dataCoverageForm" method="post" action="/Home/GetCodeCoverage" class="bbq">
+            <div id="state"></div>
+            <div id="fieldWrapper">
+                <div class="step" id="selectServer">
+                    <input name="collectionUrl" id="collectionUrl" />
+                    <input hidden="true" name="username" id="userNameCollection" />
+                    <input hidden="true" name="password" id="passwordCollection" />
+                </div>
+                <div class="step" id="selectProject">
+                    <input hidden="true" name="collectionUrl" id="collectionUrlProject" />
+                    <div id="selectProjectLocation"></div>
+                    <input hidden="true" name="username" id="userNameProject" />
+                    <input hidden="true" name="password" id="passwordProject" />
+                </div>
+                <div class="step" id="selectBuild">
+                    <input hidden="true" name="collectionUrl" id="collectionUrlBuild" />
+                    <input hidden="true" name="projectName" id="projectName" />
+                    <div id="selectBuildLocation"></div>
+                    <input hidden="true" name="username" id="userNameBuild" />
+                    <input hidden="true" name="password" id="passwordBuild" />
+                </div>
+            </div>
+            <div id="navigation">
+                <input id="back" value="Reset" type="reset" style="visibility: hidden;" />
+                <input id="next" value="Submit" type="submit" />
+            </div>
+        </form>
+    </div>
+    <div id="codeCoverageChart"></div>
 
-<div id="modalDialog">
-    <div id="modalDialogBackground" class="modalBackground"></div>
-    <div id="modalDialogContent">
-        <div id="content">
-            <label for="username">Username</label>
-            <input name="username" id="username" /><br /><br />
-
-            <label for="password">Password</label>
-            <input name="password" id="password" type="password" /><br />
-        </div>
-        <div id="navbar" class="centered">
-            <input id="dialog_ok" value="OK" type="submit" /> 	
-            <input id="dialog_cancel" value="Cancel" type="reset" />
+    <div id="modalDialog" style="display: none;">
+        <div id="modalDialogBackground" class="modalBackground"></div>
+        <div id="modalDialogContent">
+            <div id="content">
+                <label for="username">user name</label>
+                <input name="username" id="username" /><br />
+                <br />
+                <label for="password">password</label>
+                <input name="password" id="password" type="password" /><br />
+            </div>
+            <div id="navbar" class="centered">
+                <input id="dialog_cancel" value="Cancel" type="reset" />
+                <input id="dialog_ok" value="OK" type="submit" />
+            </div>
         </div>
     </div>
-</div>
 
-<script src="~/Scripts/codecoverage.js"></script>
+    <script src="~/Scripts/codecoverage.js"></script>
+</body>

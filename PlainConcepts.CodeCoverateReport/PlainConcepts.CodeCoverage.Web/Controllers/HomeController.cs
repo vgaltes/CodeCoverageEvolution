@@ -196,7 +196,7 @@
                 blocksNotCovered += build.Value.Builds.Last().BlocksNotCovered;
             }
 
-            var buildCoverage = blocksCovered * 100 / (blocksCovered + blocksNotCovered);
+            var buildCoverage = Math.Round(blocksCovered * 100 / (blocksCovered + blocksNotCovered), 2);
             return buildCoverage;
         }
 
